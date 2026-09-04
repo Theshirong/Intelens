@@ -22,5 +22,6 @@ dist/
 build/
 
 test/
+test.db
 
 DATABASE_SCHEMA.md
