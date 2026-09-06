@@ -4,46 +4,34 @@ from app.crud.users_crud import (
     get_users_list,
     get_by_username,
     delete_user,
+    update_password,
 )
-from app.schemas.users_schema import UserRegisterRequest, Token, RefreshRequest
-from app.core.config import settings
-from app.core.security import (
-    verify_password,
-    create_access_token,
-    create_refresh_token,
-    decode_refresh_token,
+from app.crud.refresh_token_crud import (
+    delete_all_for_user,
+    create_token_pair,
+    revoke_by_jti,
+    delete_useless,
 )
+from app.schemas.users_schema import (
+    UserRegisterRequest,
+    Token,
+    RefreshRequest,
+    UserPasswordRequest,
+)
+
+from app.core.security import verify_password, decode_refresh_token
 
 
 from app.models.users_model import User
 from app.models.refresh_token import RefreshToken
 
-from sqlalchemy import select
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import jwt
-from uuid import uuid4
-
-
-async def _issue_token_pair(db: AsyncSession, user_id: int) -> Token:
-    """发行 token 对"""
-    jti = str(uuid4())
-    db.add(
-        RefreshToken(
-            user_id=user_id,
-            jti=jti,
-            expire_at=datetime.now(timezone.utc)
-            + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
-        )
-    )
-    await db.flush()
-    return Token(
-        access_token=create_access_token(user_id=user_id),
-        refresh_token=create_refresh_token(user_id=user_id, jti=jti),
-    )
 
 
 async def register(db: AsyncSession, user_create: UserRegisterRequest) -> User:
@@ -68,7 +56,16 @@ async def login(db: AsyncSession, username: str, password: str) -> Token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="用户或密码错误"
         )
-    return await _issue_token_pair(db, user.id)
+    return await create_token_pair(db, user.id)
+
+
+async def logout(db: AsyncSession, refresh_token: str):
+    """退出登录: 吊销 refresh_token"""
+    try:
+        info = decode_refresh_token(refresh_token)
+    except jwt.PyJWTError:
+        return
+    await revoke_by_jti(db, info["jti"])
 
 
 async def read(db: AsyncSession, user_id: int) -> User | None:
@@ -89,7 +86,24 @@ async def delete(db: AsyncSession, user_id: int, password: str) -> None:
     # 密码正确才能注销
     if not verify_password(password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="密码错误")
+    # 先删除 token，再删用户
+    await delete_all_for_user(db, user_id)
     # 正常情况下 user 已存在; 只有并发删除时才可能返回 False
+    if not await delete_user(db, user_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
+
+
+async def admin_delete_user(db: AsyncSession, user_id: int):
+    """管理员删除用户"""
+    user = await get_user(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
+    if user.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="无权删除其他管理员",
+        )
+    await delete_all_for_user(db, user_id)
     if not await delete_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
 
@@ -117,13 +131,16 @@ async def refresh(db: AsyncSession, refresh_token: str) -> Token:
             },
         )
 
-    stored = await db.scalar(
-        select(RefreshToken).where(
-            RefreshToken.user_id == info["user_id"], RefreshToken.jti == info["jti"]
+    result = await db.execute(
+        update(RefreshToken)
+        .where(
+            RefreshToken.jti == info["jti"],
+            RefreshToken.user_id == info["user_id"],
+            RefreshToken.revoked_at.is_(None),
         )
+        .values(revoked_at=datetime.now(timezone.utc))
     )
-    # 判断查询结果 若不存在，或者 revoked_at 有值
-    if stored is None or stored.revoked_at is not None:
+    if result.rowcount == 0:  # type: ignore[attr-defined]
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail={
@@ -132,7 +149,21 @@ async def refresh(db: AsyncSession, refresh_token: str) -> Token:
             },
         )
 
-    # 刷新就吊销原来的 refresh_token
-    stored.revoked_at = datetime.now(timezone.utc)
+    # 清理过期以及被吊销的 token
+    await delete_useless(db)
 
-    return await _issue_token_pair(db, info["user_id"])
+    return await create_token_pair(db, info["user_id"])
+
+
+async def update_user_password(
+    db: AsyncSession, user_id: int, data: UserPasswordRequest
+) -> None:
+    """用户修改密码"""
+    try:
+        await update_password(db, user_id, data)
+    except LookupError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="用户不存在")
+    except ValueError:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="旧密码错误")
+
+    await delete_all_for_user(db, user_id)

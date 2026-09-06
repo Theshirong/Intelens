@@ -25,6 +25,24 @@ async def create_user(db: AsyncSession, user_create: UserRegisterRequest) -> Use
     return obj
 
 
+async def create_user_with_role(
+    db: AsyncSession, username: str, password: str, role: str
+) -> User:
+    """
+    创建管理员用户
+    """
+    obj = User(
+        username=username,
+        hashed_password=hash_password(password),
+        role=role,
+    )
+    db.add(obj)
+    # 把 SQL 发给数据库执行
+    await db.flush()
+    await db.refresh(obj)
+    return obj
+
+
 async def get_by_username(db: AsyncSession, username: str) -> User | None:
     """
     通过 username 获取用户信息;

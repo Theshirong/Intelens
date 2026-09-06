@@ -46,17 +46,23 @@ def create_refresh_token(user_id: int, jti: str):
 def decode_access_token(token: str):
     """解 access_token 拿到 user_id"""
     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-    if payload["type"] != "access":
+    if payload.get("type") != "access":
         raise jwt.InvalidTokenError("Token type mismatch")
-    return int(payload["user_id"])
+    try:
+        return int(payload["user_id"])
+    except (KeyError, TypeError, ValueError):
+        raise jwt.InvalidTokenError("Invalid user_id claim")
 
 
 def decode_refresh_token(token: str):
     """解 refresh_token 拿到 user_id, jti"""
     payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-    if payload["type"] != "refresh":
+    if payload.get("type") != "refresh":
         raise jwt.InvalidTokenError("Token type mismatch")
-    return {
-        "user_id": int(payload["user_id"]),
-        "jti": payload["jti"],
-    }
+    try:
+        return {
+            "user_id": int(payload["user_id"]),
+            "jti": payload["jti"],
+        }
+    except (KeyError, TypeError, ValueError):
+        raise jwt.InvalidTokenError("Invalid token claims")
