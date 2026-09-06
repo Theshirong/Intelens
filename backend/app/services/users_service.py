@@ -114,21 +114,13 @@ async def refresh(db: AsyncSession, refresh_token: str) -> Token:
         info = decode_refresh_token(refresh_token)
     except jwt.PyJWTError:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={
-                "code": "INVALID_REFRESH_TOKEN",
-                "message": "登录已失效，请重新登录",
-            },
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="登录已失效，请重新登录"
         )
 
     user = await db.get(User, info["user_id"])
     if user is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={
-                "code": "INVALID_REFRESH_TOKEN",
-                "message": "用户不存在",
-            },
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="用户不存在"
         )
 
     result = await db.execute(
@@ -143,10 +135,7 @@ async def refresh(db: AsyncSession, refresh_token: str) -> Token:
     if result.rowcount == 0:  # type: ignore[attr-defined]
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={
-                "code": "INVALID_REFRESH_TOKEN",
-                "message": "登录已失效，请重新登录",
-            },
+            detail="登录已失效，请重新登录",
         )
 
     # 清理过期以及被吊销的 token
