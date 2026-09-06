@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from typing import Annotated
 
 # from app.api.deps import SessionDep
 from app.services import users_service
+from app.schemas.common import Page, PageParams
 from app.schemas.users_schema import (
     UserResponse,
     UserListResponse,
@@ -20,15 +21,17 @@ router = APIRouter(
 )
 
 
-@router.get("/users_all", summary="查询所有用户", response_model=UserListResponse)
+@router.get("/users_all", summary="查询所有用户", response_model=Page[UserResponse])
 async def get_users(
+    params: Annotated[PageParams, Query()],
     db: AsyncSession = Depends(get_db),
 ):
-    user_list, total = await users_service.read_users(db)
-    return {
-        "items": user_list,
-        "total": total,
-    }
+    user_list, total = await users_service.read_users(
+        db,
+        page=params.page,
+        page_size=params.page_size,
+    )
+    return Page.create(items=user_list, total=total, params=params)
 
 
 @router.get("/{user_id}", summary="管理员按 id 查询用户", response_model=UserResponse)

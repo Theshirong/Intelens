@@ -1,14 +1,17 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=BASE_DIR / ".env")
 
     # 项目名称
     PROJECT_NAME: str = "Intelens"
 
     # 数据库配置（aiosqlite 为 SQLite 的异步驱动；生产环境换 postgresql+asyncpg）
-    DATABASE_URL: str = "sqlite+aiosqlite:///test.db"
+    DATABASE_URL: str = f"sqlite+aiosqlite:///{BASE_DIR / 'test.db'}"
     DEBUG: bool = True
 
     # 管理员

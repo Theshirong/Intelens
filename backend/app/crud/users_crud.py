@@ -58,13 +58,23 @@ async def get_user(db: AsyncSession, user_id: int) -> User | None:
     return await db.get(User, user_id)
 
 
-async def get_users_list(db: AsyncSession) -> tuple[list[User], int]:
+async def get_users_list(
+    db: AsyncSession,
+    page: int,
+    page_size: int,
+) -> tuple[list[User], int]:
     """查询所有用户信息"""
     # 查询用户数量
     count_query = select(func.count()).select_from(User)
     total = (await db.execute(count_query)).scalar_one()
     # 查询用户对象列表
-    result = await db.execute(select(User))
+    result = await db.execute(
+        select(User)
+        .order_by(User.id)
+        # 用于定位页数，从某一页开始查询
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
     items = list(result.scalars().all())
     return items, total
 

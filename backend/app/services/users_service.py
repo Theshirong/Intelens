@@ -73,9 +73,11 @@ async def read(db: AsyncSession, user_id: int) -> User | None:
     return await get_user(db, user_id)
 
 
-async def read_users(db: AsyncSession) -> tuple[list[User], int]:
+async def read_users(
+    db: AsyncSession, page: int, page_size: int
+) -> tuple[list[User], int]:
     """查询所有用户信息"""
-    return await get_users_list(db)
+    return await get_users_list(db, page, page_size)
 
 
 async def delete(db: AsyncSession, user_id: int, password: str) -> None:
