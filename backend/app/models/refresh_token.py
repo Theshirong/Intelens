@@ -1,9 +1,13 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import DateTime, func, ForeignKey
 from app.core.database import Base
-from app.models.users_model import User
+
 
 from datetime import datetime
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.users_model import User
 
 
 class RefreshToken(Base):

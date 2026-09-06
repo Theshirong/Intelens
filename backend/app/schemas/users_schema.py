@@ -49,6 +49,8 @@ class UserResponse(BaseModel):
 
     id: int
     username: str
+    role: str
+    created_at: datetime
     # 用于从 orm 获取数据
     model_config = ConfigDict(from_attributes=True)
 
