@@ -9,14 +9,11 @@ from fastapi import FastAPI
 from app.api.main import api_router
 
 from app.core.config import settings
-from app.core.database import init_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """通过lifespan初始化数据库"""
-    logger.info("数据初始化")
-    await init_db()
+    logger.info("应用启动")
     yield
 
 
