@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from app.models.users_model import User
 
 
-class RefreshToken(Base):
+class RefreshTokenModel(Base):
     """refresh token 表"""
 
     __tablename__ = "refresh_token"

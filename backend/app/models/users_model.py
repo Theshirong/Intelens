@@ -3,7 +3,7 @@ from sqlalchemy import DateTime, func
 from typing import TYPE_CHECKING, Literal, Annotated
 
 if TYPE_CHECKING:
-    from app.models.refresh_token import RefreshToken
+    from app.models.refresh_token import RefreshTokenModel
 
 from datetime import datetime
 
@@ -26,4 +26,6 @@ class User(Base):
         DateTime(timezone=True), server_default=func.now(), comment="创建时间"
     )
 
-    refresh_token: Mapped[list["RefreshToken"]] = relationship(back_populates="user")
+    refresh_token: Mapped[list["RefreshTokenModel"]] = relationship(
+        back_populates="user"
+    )

@@ -23,7 +23,7 @@ from app.core.security import verify_password, decode_refresh_token
 
 
 from app.models.users_model import User
-from app.models.refresh_token import RefreshToken
+from app.models.refresh_token import RefreshTokenModel
 
 from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -126,11 +126,11 @@ async def refresh(db: AsyncSession, refresh_token: str) -> Token:
         )
 
     result = await db.execute(
-        update(RefreshToken)
+        update(RefreshTokenModel)
         .where(
-            RefreshToken.jti == info["jti"],
-            RefreshToken.user_id == info["user_id"],
-            RefreshToken.revoked_at.is_(None),
+            RefreshTokenModel.jti == info["jti"],
+            RefreshTokenModel.user_id == info["user_id"],
+            RefreshTokenModel.revoked_at.is_(None),
         )
         .values(revoked_at=datetime.now(timezone.utc))
     )
