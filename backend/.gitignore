@@ -24,5 +24,8 @@ build/
 
 test/
 test.db
+html/
+
+docs/
 
 DATABASE_SCHEMA.md
