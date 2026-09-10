@@ -14,7 +14,7 @@ function FeaturedCard({ item }: { item: NewsListItem }) {
   const summary = markdownToPlain(detail?.content)
 
   return (
-    <article className="group flex h-full flex-col rounded-xl border bg-white p-6 transition-shadow hover:shadow-md sm:p-8">
+    <article className="group flex h-full flex-col rounded-xl border bg-card p-6 transition-shadow hover:shadow-md sm:p-8">
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <Badge variant="secondary" className="font-medium">
           {item.source_name}
@@ -52,7 +52,7 @@ function FeaturedCard({ item }: { item: NewsListItem }) {
 
 function FeaturedSkeleton() {
   return (
-    <div className="rounded-xl border bg-white p-6 sm:p-8">
+    <div className="rounded-xl border bg-card p-6 sm:p-8">
       <Skeleton className="h-5 w-24 rounded-full" />
       <Skeleton className="mt-4 h-8 w-full" />
       <Skeleton className="mt-2 h-8 w-3/4" />
@@ -125,7 +125,7 @@ export function NewsGrid({
           ) : featured ? (
             <FeaturedCard item={featured} />
           ) : (
-            <div className="flex h-full min-h-40 items-center justify-center rounded-xl border border-dashed bg-white/50 text-sm text-muted-foreground">
+            <div className="flex h-full min-h-40 items-center justify-center rounded-xl border border-dashed bg-card/50 text-sm text-muted-foreground">
               暂无新闻数据
             </div>
           )}
@@ -159,7 +159,7 @@ export function NewsGrid({
             </div>
           ) : (
             !featured && (
-              <div className="flex h-full min-h-40 items-center justify-center rounded-xl border border-dashed bg-white/50 text-sm text-muted-foreground">
+              <div className="flex h-full min-h-40 items-center justify-center rounded-xl border border-dashed bg-card/50 text-sm text-muted-foreground">
                 暂无更多资讯
               </div>
             )

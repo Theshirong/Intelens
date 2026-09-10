@@ -177,16 +177,16 @@ function LoginPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* 品牌侧栏 */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-foreground p-12 text-white lg:flex">
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-foreground p-12 text-background lg:flex">
         <div className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-md bg-white font-display text-xl font-black text-foreground">
+          <span className="flex size-9 items-center justify-center rounded-md bg-card font-display text-xl font-black text-foreground">
             N
           </span>
           <span className="font-display text-lg font-black tracking-tight">NEXUS AI NEWS</span>
         </div>
 
         <div>
-          <p className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-white/50">
+          <p className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-background/50">
             <Newspaper className="size-4" />
             Better Information, Bigger Perspective
           </p>
@@ -195,14 +195,14 @@ function LoginPage() {
             <br />
             NEWS
             <br />
-            <span className="text-white/20">INTEL·</span>
+            <span className="text-background/20">INTEL·</span>
           </h1>
-          <p className="mt-6 max-w-md text-lg text-white/70">
+          <p className="mt-6 max-w-md text-lg text-background/70">
             从海量信息中，发现真正重要的 AI 动向。
           </p>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-white/40">
+        <div className="flex items-center justify-between text-xs text-background/40">
           <span>AI 新闻情报 · 研究 · 洞察</span>
           <span>让 AI 发现更多可能</span>
         </div>
@@ -213,7 +213,7 @@ function LoginPage() {
           className="pointer-events-none absolute inset-0 opacity-[0.06]"
           style={{
             backgroundImage:
-              "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+              "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
             backgroundSize: "44px 44px",
           }}
         />

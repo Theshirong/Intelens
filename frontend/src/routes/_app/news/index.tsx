@@ -100,7 +100,7 @@ function NewsListPage() {
             updateSearch({ source: value === "all" ? undefined : Number(value), page: 1 })
           }
         >
-          <SelectTrigger className="w-40 bg-white">
+          <SelectTrigger className="w-40 bg-card">
             <SelectValue placeholder="全部来源" />
           </SelectTrigger>
           <SelectContent>
@@ -117,7 +117,7 @@ function NewsListPage() {
           value={String(size)}
           onValueChange={(value) => updateSearch({ size: Number(value), page: 1 })}
         >
-          <SelectTrigger className="w-28 bg-white" aria-label="每页条数">
+          <SelectTrigger className="w-28 bg-card" aria-label="每页条数">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

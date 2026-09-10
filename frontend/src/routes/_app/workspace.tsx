@@ -65,7 +65,7 @@ function ProfileCard() {
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
           <Avatar className="size-14 border">
-            <AvatarFallback className="bg-foreground text-lg font-bold text-white">
+            <AvatarFallback className="bg-foreground text-lg font-bold text-background">
               {(user?.username ?? "U").slice(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>

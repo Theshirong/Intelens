@@ -5,6 +5,7 @@
 /*
  * NEXUS AI NEWS 主题 —— 依据设计稿
  * 浅灰底 / 白卡片 / 近黑正文 / 皇家蓝主色 / 橙·紫·红辅助色
+ * 深色模式沿用同一套语义变量, 只替换取值
  */
 @layer base {
   :root {
@@ -47,6 +48,43 @@
     --chart-4: #e34948;
     --chart-5: #1baf7a;
   }
+
+  .dark {
+    --background: 222 24% 8%;
+    --foreground: 210 20% 96%;
+
+    --card: 222 20% 12%;
+    --card-foreground: 210 20% 96%;
+
+    --popover: 222 20% 12%;
+    --popover-foreground: 210 20% 96%;
+
+    --primary: 228 85% 68%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 15% 18%;
+    --secondary-foreground: 210 20% 96%;
+
+    --muted: 222 15% 18%;
+    --muted-foreground: 218 12% 66%;
+
+    --accent: 226 40% 24%;
+    --accent-foreground: 226 90% 88%;
+
+    --destructive: 0 62% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 14% 24%;
+    --input: 222 14% 28%;
+    --ring: 228 85% 68%;
+
+    /* 深色底上提高明度, 保持与深色背景的对比度 */
+    --chart-1: #5b9bf0;
+    --chart-2: #f0824f;
+    --chart-3: #8f83e6;
+    --chart-4: #ef6f6e;
+    --chart-5: #45c79a;
+  }
 }
 
 @layer base {
@@ -67,7 +105,7 @@
 /* 描边水印字 */
 .text-outline {
   color: transparent;
-  -webkit-text-stroke: 1.5px hsl(222 40% 9% / 0.22);
+  -webkit-text-stroke: 1.5px hsl(var(--foreground) / 0.22);
 }
 
 /* 滚动条 */
@@ -79,10 +117,10 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(220 13% 78%);
+  background: hsl(var(--border));
   border-radius: 8px;
-  border: 2px solid hsl(220 14% 91%);
+  border: 2px solid hsl(var(--background));
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(220 13% 68%);
+  background: hsl(var(--muted-foreground) / 0.45);
 }

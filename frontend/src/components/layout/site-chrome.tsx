@@ -36,7 +36,7 @@ const NAV_LINKS = [
 function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <span className="flex size-8 items-center justify-center rounded-md bg-foreground font-display text-lg font-black text-white">
+      <span className="flex size-8 items-center justify-center rounded-md bg-foreground font-display text-lg font-black text-background">
         N
       </span>
       <span className="font-display text-base font-black tracking-tight">
@@ -83,7 +83,7 @@ export function TopNav() {
     })
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-white/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b bg-card/85 backdrop-blur">
       <div className="container flex h-16 items-center justify-between gap-6">
         <Logo />
 
@@ -109,7 +109,7 @@ export function TopNav() {
                   aria-label="用户菜单"
                 >
                   <Avatar className="size-8 border">
-                    <AvatarFallback className="bg-foreground text-xs font-semibold text-white">
+                    <AvatarFallback className="bg-foreground text-xs font-semibold text-background">
                       {(user?.username ?? "U").slice(0, 1).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -196,10 +196,10 @@ export function TopNav() {
 /** 页脚 */
 export function Footer() {
   return (
-    <footer className="border-t bg-white">
+    <footer className="border-t bg-card">
       <div className="container flex flex-col items-center justify-between gap-3 py-8 sm:flex-row">
         <div className="flex items-center gap-3">
-          <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-display text-sm font-black text-white">
+          <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-display text-sm font-black text-background">
             N
           </span>
           <div>

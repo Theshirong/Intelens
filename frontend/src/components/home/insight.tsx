@@ -36,7 +36,7 @@ const REPORTS: InsightItem[] = [
 /** 研究洞察: 深度报告卡片 (演示数据) */
 export function Insight() {
   return (
-    <section id="insight" className="scroll-mt-20 border-t bg-white/60">
+    <section id="insight" className="scroll-mt-20 border-t bg-card/60">
       <div className="container py-14">
         <SectionHeader
           eyebrow="Insight"
@@ -47,7 +47,7 @@ export function Insight() {
           {REPORTS.map((report) => (
             <article
               key={report.title}
-              className="group flex flex-col rounded-xl border bg-white p-6 transition-all hover:-translate-y-0.5 hover:shadow-md"
+              className="group flex flex-col rounded-xl border bg-card p-6 transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="flex items-center gap-2">
                 <Badge className="font-medium">{report.tag}</Badge>

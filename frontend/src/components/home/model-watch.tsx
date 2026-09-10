@@ -48,7 +48,7 @@ const MODELS: ModelCard[] = [
 /** 模型追踪: 主流模型卡片 (演示数据) */
 export function ModelWatch() {
   return (
-    <section id="model-watch" className="scroll-mt-20 border-t bg-white/60">
+    <section id="model-watch" className="scroll-mt-20 border-t bg-card/60">
       <div className="container py-14">
         <SectionHeader
           eyebrow="Model Watch"
@@ -59,7 +59,7 @@ export function ModelWatch() {
           {MODELS.map((model) => (
             <article
               key={model.name}
-              className="group rounded-xl border bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
+              className="group rounded-xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>

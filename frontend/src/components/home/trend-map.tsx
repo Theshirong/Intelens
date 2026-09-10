@@ -208,7 +208,7 @@ function BarList({ data }: { data: Array<{ label: string; value: number; color?:
 /** AI 趋势图谱: 热度趋势 / 话题分布 / 地域分布 */
 export function TrendMap() {
   return (
-    <section id="trend-map" className="scroll-mt-20 border-t bg-white/60">
+    <section id="trend-map" className="scroll-mt-20 border-t bg-card/60">
       <div className="container py-14">
         <SectionHeader
           eyebrow="Trend Map"

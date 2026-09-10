@@ -44,7 +44,7 @@ export function Hero({ total, sourceCount, loading }: HeroProps) {
                 key={pill.label}
                 to={pill.to}
                 hash={pill.hash}
-                className="rounded-full border bg-white px-4 py-1.5 text-sm font-medium text-secondary-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                className="rounded-full border bg-card px-4 py-1.5 text-sm font-medium text-secondary-foreground transition-colors hover:border-primary/50 hover:text-primary"
               >
                 {pill.label}
               </Link>
