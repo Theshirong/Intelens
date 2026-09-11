@@ -9,8 +9,10 @@ from app.schemas.common import Page, PageParams
 from app.schemas.users_schema import (
     UserResponse,
     UserListResponse,
+    UserDeleteRequest,
 )
 from app.core.database import get_db
+from app.core.security import verify_password
 from app.api.deps import get_current_admin
 from app.models.users_model import User
 
@@ -48,6 +50,7 @@ async def get_user(
 @router.delete("/{user_id}", summary="管理员删除用户")
 async def delete_user(
     user_id: int,
+    param: UserDeleteRequest,
     current_user: Annotated[User, Depends(get_current_admin)],
     db: AsyncSession = Depends(get_db),
 ):
@@ -56,5 +59,8 @@ async def delete_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="管理员不能删除自己, 请使用注销账号接口",
         )
+    if not verify_password(param.password, current_user.hashed_password):
+        # 400 而非 401: 401 专指 token 失效, 前端会触发刷新重试
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="密码错误")
     await users_service.admin_delete_user(db, user_id)
-    return {"msg": "注销成功"}
+    return {"msg": "删除成功"}

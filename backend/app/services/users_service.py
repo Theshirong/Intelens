@@ -86,8 +86,9 @@ async def delete(db: AsyncSession, user_id: int, password: str) -> None:
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
     # 密码正确才能注销
+    # 400 而非 401: 401 专指 token 失效, 前端会触发刷新重试
     if not verify_password(password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="密码错误")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="密码错误")
     # 先删除 token，再删用户
     await delete_all_for_user(db, user_id)
     # 正常情况下 user 已存在; 只有并发删除时才可能返回 False
@@ -155,6 +156,7 @@ async def update_user_password(
     except LookupError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="用户不存在")
     except ValueError:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="旧密码错误")
+        # 旧密码错误属于业务校验失败, 用 400 避免与 token 失效的 401 混淆
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="旧密码错误")
 
     await delete_all_for_user(db, user_id)
