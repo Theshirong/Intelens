@@ -3,10 +3,11 @@
 """
 
 from fastapi import APIRouter
-from app.api.routes import users, admin, news
+from app.api.routes import users, admin, news, models
 
 api_router = APIRouter()
 
 api_router.include_router(users.router)
 api_router.include_router(admin.router)
 api_router.include_router(news.router)
+api_router.include_router(models.router)

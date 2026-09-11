@@ -118,3 +118,24 @@ class BaseCrawler(ABC):
                 f"请求失败: {type(e).__name__}", source_name=source_name, url=url
             ) from e
         return response
+
+
+class ModelsCrawlerBase(BaseCrawler):
+    """模型信息爬虫基类: 抓官方「模型 & 价格」页, 产出对齐 ModelModel 字段的字典
+
+    与新闻爬虫 (BaseCrawler 直接子类) 分流: 实现的是 fetch_models 而非 fetch。
+    """
+
+    @abstractmethod
+    async def fetch_models(self, source: SourceModel) -> list[dict]:
+        """抓取并解析官方模型信息页
+
+        返回的字典字段名需与 app.models.model_model.ModelModel 对齐。
+        """
+        raise NotImplementedError
+
+    async def fetch(self, source: SourceModel) -> list[RawNewsItem]:
+        """误入新闻管线时报错, 模型爬虫应调用 fetch_models"""
+        raise NotImplementedError(
+            f"{type(self).__name__} 是模型爬虫, 请调用 fetch_models"
+        )

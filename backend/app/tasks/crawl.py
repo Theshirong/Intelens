@@ -11,14 +11,21 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import engine
-from app.crawlers.base import BaseCrawler, CrawlerError, RawNewsItem
+from app.crawlers.base import BaseCrawler, CrawlerError, ModelsCrawlerBase, RawNewsItem
 from app.crawlers.deepseek import DeepSeekCrawler
+from app.crawlers.ds_models import DsModelsCrawler
+from app.crud.model_crud import save_models
 from app.crud.news_crud import get_active_sources, get_or_create_source, save_news
 from app.models.source_model import SourceModel
 
-# 源名称 -> 爬虫实现, 新增站点在此注册
+# 源名称 -> 新闻爬虫实现, 新增站点在此注册
 CRAWLER_REGISTRY: dict[str, type[BaseCrawler]] = {
     "deepseek": DeepSeekCrawler,
+}
+
+# 源名称 -> 模型信息爬虫实现 (官方「模型 & 价格」页)
+MODEL_CRAWLER_REGISTRY: dict[str, type[ModelsCrawlerBase]] = {
+    "deepseek": DsModelsCrawler,
 }
 
 
@@ -52,8 +59,25 @@ async def _fetch_one(source: SourceModel) -> tuple[SourceModel, list[RawNewsItem
     return source, items
 
 
+async def _fetch_models_one(
+    source: SourceModel,
+) -> tuple[SourceModel, list[dict] | None]:
+    """抓单个源的模型信息, 失败记日志后返回 None"""
+    crawler_cls = MODEL_CRAWLER_REGISTRY.get(source.name)
+    if crawler_cls is None:
+        return source, None
+
+    try:
+        async with crawler_cls() as crawler:
+            items = await crawler.fetch_models(source)
+    except CrawlerError as e:
+        logger.error(f"源 {source.name} 模型信息抓取失败: {e}")
+        return source, None
+    return source, items
+
+
 async def run_crawl() -> None:
-    """采集所有启用的新闻源并入库
+    """采集所有启用的新闻源与模型信息并入库
 
     网络抓取用 gather 并发; 入库共享同一个 AsyncSession, 必须串行。
     """
@@ -62,18 +86,31 @@ async def run_crawl() -> None:
             await get_or_create_source(db, **source)
 
         active_sources = await get_active_sources(db)
-        # 抓取是纯网络 IO, 并发执行; 单源失败不拖垮整轮 (return_exceptions 已在 _fetch_one 内兜底)
-        results = await asyncio.gather(
+
+        news_task = asyncio.gather(
             *(_fetch_one(source) for source in active_sources)
         )
+        models_task = asyncio.gather(
+            *(_fetch_models_one(source) for source in active_sources)
+        )
+        # 新闻与模型信息同时并发抓取
+        news_results, model_results = await asyncio.gather(news_task, models_task)
 
         total_new = 0
-        for source, items in results:
+        for source, items in news_results:
             if items is None:
                 continue
             added = await save_news(db, source.id, items)
             total_new += added
             logger.info(f"源 {source.name}: 抓取 {len(items)} 条, 新增 {added} 条")
+
+        for source, items in model_results:
+            if items is None:
+                continue
+            added, updated = await save_models(db, source.id, items)
+            logger.info(
+                f"源 {source.name}: 模型信息新增 {added} 条, 更新 {updated} 条"
+            )
 
         await db.commit()
         logger.info(f"本轮采集完成, 共新增 {total_new} 条")
