@@ -38,30 +38,35 @@ async def save_news(
 ) -> int:
     """
     批量入库, 按 url 去重 (url 已存在则跳过, 新闻基本不可变);
+    url 先规范化 (去尾部斜杠), 同一页面带/不带斜杠视为一条;
     return: 新增条数
     """
     if not items:
         return 0
 
+    # 去尾部斜杠后按 url 去重: 同一页面带/不带斜杠视为一条,
+    # 官网 CDN 对两种写法的重定向行为不稳定, 不能依赖最终 url 一致
+    normalized = {item.url.rstrip("/") or "/": item for item in items}
+
     result = await db.execute(
-        select(NewsModel.url).where(NewsModel.url.in_([item.url for item in items]))
+        select(NewsModel.url).where(NewsModel.url.in_(normalized.keys()))
     )
     existing_urls = set(result.scalars().all())
 
-    new_items = [item for item in items if item.url not in existing_urls]
-    if new_items:
+    new_urls = [url for url in normalized if url not in existing_urls]
+    if new_urls:
         db.add_all(
             NewsModel(
                 source_id=source_id,
-                title=item.title,
-                url=item.url,
-                content=item.content,
-                published_at=item.published_at,
+                title=normalized[url].title,
+                url=url,
+                content=normalized[url].content,
+                published_at=normalized[url].published_at,
             )
-            for item in new_items
+            for url in new_urls
         )
         await db.flush()
-    return len(new_items)
+    return len(new_urls)
 
 
 async def get_news_list(
