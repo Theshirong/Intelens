@@ -34,7 +34,10 @@ npm run build      # 生产构建 (tsc 类型检查 + vite build)
 | `/news/:id` | 资讯详情 (Markdown 正文) | `GET /news/{id}` |
 | `/workspace` | 工作台 (个人资料 / 改密 / 注销 / 用户管理) | `GET /users/me` `PATCH /users/me/password` `DELETE /users/me` `GET /admin/users_all` `DELETE /admin/{user_id}` |
 
-首页中「模型追踪」「AI 趋势图谱」「研究洞察」区块为演示数据（后端暂无对应接口）。
+首页中「模型追踪」接 `GET /models` + `GET /models/rankings`，「AI 趋势图谱」的
+「热度趋势」接 `GET /models/popularity-history`（OpenRouter 周榜位次，详见后端
+`app/crud/popularity_crud.py`）。「话题分布」「地域分布」两个页签仍是演示数据（后端无对应
+接口）。
 
 ## 认证机制
 

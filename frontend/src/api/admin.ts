@@ -16,7 +16,12 @@ export function useAllUsers(page: number, pageSize: number) {
 export function useDeleteUser() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (userId: number) => api<{ msg: string }>(`/admin/${userId}`, { method: "DELETE" }),
+    // 后端要求管理员密码二次确认, 密码错误时返回 400「密码错误」
+    mutationFn: ({ userId, password }: { userId: number; password: string }) =>
+      api<{ msg: string }>(`/admin/${userId}`, {
+        method: "DELETE",
+        body: { password },
+      }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "users"] })
     },

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { useTheme } from "next-themes"
 import { Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -8,27 +8,32 @@ interface ThemeToggleProps {
   className?: string
 }
 
-/** 浅色 / 深色主题切换按钮 */
+/**
+ * 日间 / 夜间模式开关。
+ * 只在两种模式之间切换 (不含「跟随系统」): 这里的语义就是
+ * 「把当前页面调亮或调暗」, 点一下立即生效。
+ */
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  // 主题只有挂载后才能读到, 避免首帧与页面实际主题不一致
+  // 首帧还不知道解析结果, 挂载后再渲染对应图标, 避免图标闪一下
   useEffect(() => setMounted(true), [])
 
   const isDark = mounted && resolvedTheme === "dark"
-  const label = isDark ? "切换到浅色模式" : "切换到深色模式"
+  const label = isDark ? "切换到日间模式" : "切换到夜间模式"
 
   return (
     <Button
+      type="button"
       variant="ghost"
       size="icon"
-      className={cn("shrink-0", className)}
+      className={cn("shrink-0 text-muted-foreground hover:text-foreground", className)}
       aria-label={label}
       title={label}
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
-      {isDark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
+      {isDark ? <Sun /> : <Moon />}
     </Button>
   )
 }

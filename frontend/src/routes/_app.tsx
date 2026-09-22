@@ -1,15 +1,9 @@
-import { createFileRoute, Outlet, redirect, useRouterState } from "@tanstack/react-router"
+import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router"
 import { useMe } from "@/api/auth"
-import { useAuthStore } from "@/stores/auth"
 import { Footer, ScrollToHash, TopNav } from "@/components/layout/site-chrome"
+import { AccountSettingsDialog } from "@/components/settings/account-settings-dialog"
 
 export const Route = createFileRoute("/_app")({
-  beforeLoad: () => {
-    // 新闻等接口均需登录, 未登录直接送往登录页
-    if (!useAuthStore.getState().accessToken) {
-      throw redirect({ to: "/login" })
-    }
-  },
   component: AppLayout,
 })
 
@@ -22,7 +16,7 @@ function AppLayout() {
 
   if (DOC_ROUTE.test(pathname)) {
     return (
-      <div className="flex min-h-screen flex-col bg-card">
+      <div className="flex min-h-screen flex-col bg-page">
         <main className="flex-1">
           <Outlet />
         </main>
@@ -38,6 +32,8 @@ function AppLayout() {
       </main>
       <Footer />
       <ScrollToHash />
+      {/* 账户设置悬浮在任意页面上, 不占路由 */}
+      <AccountSettingsDialog />
     </div>
   )
 }

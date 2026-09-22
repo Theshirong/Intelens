@@ -12,15 +12,27 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Newspaper } from "lucide-react"
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: () => {
+  // 被拦截的页面会把原地址放在 redirect 上, 登录后直接回去
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+  }),
+  beforeLoad: ({ search }) => {
     if (useAuthStore.getState().accessToken) {
-      throw redirect({ to: "/" })
+      throw redirect({ href: search.redirect ?? "/" })
     }
   },
   component: LoginPage,
 })
 
-function LoginForm({ onSwitch, defaultUsername }: { onSwitch: () => void; defaultUsername: string }) {
+function LoginForm({
+  onSwitch,
+  defaultUsername,
+  redirectTo,
+}: {
+  onSwitch: () => void
+  defaultUsername: string
+  redirectTo?: string
+}) {
   const navigate = useNavigate()
   const login = useLogin()
   const [username, setUsername] = useState(defaultUsername)
@@ -35,7 +47,7 @@ function LoginForm({ onSwitch, defaultUsername }: { onSwitch: () => void; defaul
       {
         onSuccess: (data) => {
           toast.success(data.msg)
-          void navigate({ to: "/" })
+          void navigate({ href: redirectTo ?? "/" })
         },
         onError: (err) => setError(err.message),
       },
@@ -173,16 +185,14 @@ function RegisterForm({ onSwitch }: { onSwitch: (username: string) => void }) {
 function LoginPage() {
   const [tab, setTab] = useState("login")
   const [lastUsername, setLastUsername] = useState("")
+  const { redirect: redirectTo } = Route.useSearch()
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* 品牌侧栏 */}
       <div className="relative hidden flex-col justify-between overflow-hidden bg-foreground p-12 text-background lg:flex">
         <div className="flex items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-md bg-card font-display text-xl font-black text-foreground">
-            N
-          </span>
-          <span className="font-display text-lg font-black tracking-tight">NEXUS AI NEWS</span>
+          <span className="font-brand text-lg">Intelens</span>
         </div>
 
         <div>
@@ -226,7 +236,7 @@ function LoginPage() {
             <CardTitle className="font-display text-2xl font-black tracking-tight">
               欢迎使用 Intelens
             </CardTitle>
-            <CardDescription>AI 新闻情报工作台 · 登录后获取实时资讯</CardDescription>
+            <CardDescription>AI 新闻情报工作台 · 登录后可参与博客论坛</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={tab} onValueChange={setTab}>
@@ -237,6 +247,7 @@ function LoginPage() {
               <TabsContent value="login">
                 <LoginForm
                   defaultUsername={lastUsername}
+                  redirectTo={redirectTo}
                   onSwitch={() => setTab("register")}
                 />
               </TabsContent>

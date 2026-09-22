@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * NEXUS AI NEWS 主题 —— 依据设计稿
+ * Intelens 主题 —— 依据设计稿
  * 浅灰底 / 白卡片 / 近黑正文 / 皇家蓝主色 / 橙·紫·红辅助色
  * 深色模式沿用同一套语义变量, 只替换取值
  */
@@ -40,6 +40,9 @@
 
     --radius: 0.625rem;
 
+    /* 文档阅读页底色: 浅色下是一张白纸, 与卡片同色 */
+    --page: 0 0% 100%;
+
     /* 图表系列色 —— 已通过 dataviz 六项校验(白底):
        蓝 #2a78d6 / 橙 #eb6834 / 紫 #4a3aa7 / 红 #e34948 */
     --chart-1: #2a78d6;
@@ -50,23 +53,24 @@
   }
 
   .dark {
-    --background: 222 24% 8%;
-    --foreground: 210 20% 96%;
+    /* 夜间底色取设计给定的中性近黑 #161616, 整体走无彩度灰阶 */
+    --background: 0 0% 8.6%;
+    --foreground: 0 0% 96%;
 
-    --card: 222 20% 12%;
-    --card-foreground: 210 20% 96%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 222 20% 12%;
-    --popover-foreground: 210 20% 96%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 96%;
 
     --primary: 228 85% 68%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 15% 18%;
-    --secondary-foreground: 210 20% 96%;
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 222 15% 18%;
-    --muted-foreground: 218 12% 66%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 66%;
 
     --accent: 226 40% 24%;
     --accent-foreground: 226 90% 88%;
@@ -74,9 +78,12 @@
     --destructive: 0 62% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 14% 24%;
-    --input: 222 14% 28%;
+    --border: 0 0% 24%;
+    --input: 0 0% 28%;
     --ring: 228 85% 68%;
+
+    /* 阅读页与夜间底色同为 #161616, 卡片作为浮起层略亮 */
+    --page: 0 0% 8.6%;
 
     /* 深色底上提高明度, 保持与深色背景的对比度 */
     --chart-1: #5b9bf0;
@@ -97,9 +104,41 @@
   }
 }
 
+/* 品牌字标: 自托管 Poppins (几何无衬线, 接近参考图的字标) */
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/poppins-600-latin.woff2") format("woff2");
+}
+
+.font-brand {
+  font-family: "Poppins", "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
 /* 编辑刊头风格的大号展示字 */
 .font-display {
   letter-spacing: -0.045em;
+}
+
+/*
+ * 手写楷体 (对应参考站使用的霞鹜文楷):
+ * 优先本机楷体, 没有则退回衬线, 避免依赖外部字体服务
+ */
+.font-kai {
+  font-family: "LXGW WenKai TC", "LXGW WenKai", "Kaiti SC", "STKaiti",
+    "KaiTi", "楷体", ui-serif, Georgia, serif;
+}
+
+/* Hero 问候语旁的互动圆脸 */
+.hero-face {
+  display: inline-block;
+  width: 0.72em;
+  height: 0.72em;
+  filter: drop-shadow(0 1px 2px hsl(var(--foreground) / 0.18));
 }
 
 /* 描边水印字 */
@@ -124,3 +163,6 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.45);
 }
+
+/* Hero 蛛网图谱的动效由 hero-web.tsx 逐帧驱动 (节点弹簧漂浮 + 直线端点跟随),
+   不用 CSS 动画: 线要跟着节点实时重算, 交给 CSS 会跟节点各动各的。 */

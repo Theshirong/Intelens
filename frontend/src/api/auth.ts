@@ -5,6 +5,7 @@ import type { LoginResponse, UserResponse } from "@/types/api"
 
 /** 当前用户信息 */
 export function useMe() {
+  const accessToken = useAuthStore((s) => s.accessToken)
   return useQuery({
     queryKey: ["me"],
     queryFn: async () => {
@@ -12,6 +13,8 @@ export function useMe() {
       useAuthStore.getState().setUser(user)
       return user
     },
+    // 未登录的访客不请求 /users/me, 避免必现的 401
+    enabled: Boolean(accessToken),
     staleTime: 5 * 60 * 1000,
     retry: false,
   })
@@ -64,6 +67,22 @@ export function useDeleteAccount() {
       api<{ msg: string }>("/users/me", { method: "DELETE", body: { password } }),
     onSettled: () => {
       useAuthStore.getState().clear()
+    },
+  })
+}
+
+/** 修改自己的信息 (目前只有用户名) */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { username: string }) =>
+      api<UserResponse>("/users/me", { method: "PATCH", body: data }),
+    onSuccess: (user) => {
+      useAuthStore.getState().setUser(user)
+      // 顶栏/设置侧栏读的是 /me, 论坛帖子与评论显示的是作者名, 都要跟着刷新
+      void queryClient.invalidateQueries({ queryKey: ["me"] })
+      void queryClient.invalidateQueries({ queryKey: ["forum"] })
+      void queryClient.invalidateQueries({ queryKey: ["admin", "users"] })
     },
   })
 }
