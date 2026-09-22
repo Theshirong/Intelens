@@ -14,6 +14,7 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.core.database import init_db
 from app.core.database import engine
+from app.core.logging import setup_logging
 from app.crud.users_crud import get_by_username, create_user_with_role
 from app.tasks.crawl import run_crawl
 
@@ -57,6 +58,9 @@ async def lifespan(app: FastAPI):
 
     scheduler.shutdown(wait=False)
 
+
+# 日志必须在任何采集开始前接管, 否则第一条 SQL echo 就可能阻塞在主线程上
+setup_logging()
 
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
