@@ -2,12 +2,14 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import Markdown from "react-markdown"
 import { ChevronRight, ExternalLink, FileQuestion } from "lucide-react"
+import { vendorLabel } from "@/lib/vendors"
 import { useNewsDetail } from "@/api/news"
 import { BackToTop } from "@/components/news/back-to-top"
 import { DocHeader } from "@/components/news/doc-shell"
 import { NewsSidebar } from "@/components/news/news-sidebar"
 import { NewsToc } from "@/components/news/news-toc"
 import { extractMarkdownHeadings } from "@/components/news/markdown-headings"
+import { MarkdownVideo, isVideoUrl } from "@/components/news/markdown-media"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -104,9 +106,8 @@ function NewsDetailPage() {
   )
   const headingIndex = useRef(0)
 
-  // 窄屏: 目录以抽屉形式浮出; 宽屏: 目录可折叠
+  // 目录只在窄屏以抽屉形式浮出, 宽屏常驻显示
   const [navOpen, setNavOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
 
   // 视口回到宽屏时收起抽屉, 避免残留遮罩
   useEffect(() => {
@@ -117,14 +118,6 @@ function NewsDetailPage() {
     media.addEventListener("change", onChange)
     return () => media.removeEventListener("change", onChange)
   }, [])
-
-  const handleToggleNav = () => {
-    if (window.matchMedia("(min-width: 1024px)").matches) {
-      setCollapsed((value) => !value)
-    } else {
-      setNavOpen(true)
-    }
-  }
 
   headingIndex.current = 0
   const headingComponents = {
@@ -144,13 +137,20 @@ function NewsDetailPage() {
         </h3>
       )
     },
+    // 视频链接还原成播放器, 见 markdown-media.tsx
+    a: ({ href, children }: { href?: string; children?: ReactNode }) =>
+      isVideoUrl(href) ? (
+        <MarkdownVideo src={href} />
+      ) : (
+        <a href={href}>{children}</a>
+      ),
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-card">
+    <div className="flex min-h-screen flex-col bg-page">
       <DocHeader
-        onToggleNav={handleToggleNav}
-        sidebarOpen={navOpen || !collapsed}
+        onToggleNav={() => setNavOpen(true)}
+        sidebarOpen={navOpen}
       >
         {isPending ? (
           <Skeleton className="h-4 w-1/3" />
@@ -167,18 +167,16 @@ function NewsDetailPage() {
         <DocNotFound />
       ) : (
         <div className={DOC_CONTAINER}>
-          {!collapsed && (
-            <aside
-              className={`${STICKY_ASIDE} ${NO_SCROLLBAR} hidden w-[17rem] lg:block`}
-            >
-              <NewsSidebar activeId={news.id} />
-            </aside>
-          )}
+          <aside
+            className={`${STICKY_ASIDE} ${NO_SCROLLBAR} hidden w-[17rem] lg:block`}
+          >
+            <NewsSidebar activeId={news.id} />
+          </aside>
 
           <main className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
               <Badge variant="secondary" className="font-medium">
-                {news.source_name}
+                {vendorLabel(news.source_name)}
               </Badge>
               <span className="tabular-nums">
                 发布于 {formatFullDateTime(news.published_at)}
@@ -201,7 +199,7 @@ function NewsDetailPage() {
             )}
 
             <div className="mt-10 flex justify-center border-t pt-6">
-              <Button asChild variant="outline" className="bg-card font-medium">
+              <Button asChild variant="outline" className="bg-page font-medium">
                 <a href={news.url} target="_blank" rel="noreferrer">
                   <ExternalLink className="size-4" />
                   查看原文
@@ -210,7 +208,7 @@ function NewsDetailPage() {
             </div>
           </main>
 
-          {!collapsed && headings.length > 0 && (
+          {headings.length > 0 && (
             <aside
               className={`${STICKY_ASIDE} ${NO_SCROLLBAR} hidden w-52 xl:block`}
             >

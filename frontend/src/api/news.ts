@@ -6,14 +6,21 @@ export interface NewsListParams {
   page: number
   pageSize: number
   sourceId?: number | null
+  /** 标题关键词 (全站搜索与列表页公用) */
+  q?: string
 }
 
-export function useNewsList({ page, pageSize, sourceId }: NewsListParams) {
+export function useNewsList({ page, pageSize, sourceId, q }: NewsListParams) {
   return useQuery({
-    queryKey: ["news", "list", page, pageSize, sourceId ?? "all"],
+    queryKey: ["news", "list", page, pageSize, sourceId ?? "all", q ?? ""],
     queryFn: () =>
       api<Page<NewsListItem>>("/news", {
-        params: { page, page_size: pageSize, source_id: sourceId ?? undefined },
+        params: {
+          page,
+          page_size: pageSize,
+          source_id: sourceId ?? undefined,
+          q: q?.trim() || undefined,
+        },
       }),
     placeholderData: (prev) => prev, // 翻页时保持上一帧, 不闪骨架屏
   })

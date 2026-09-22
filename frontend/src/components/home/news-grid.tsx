@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { ArrowRight } from "lucide-react"
+import { vendorLabel } from "@/lib/vendors"
 import { useNewsDetail } from "@/api/news"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -17,7 +18,7 @@ function FeaturedCard({ item }: { item: NewsListItem }) {
     <article className="group flex h-full flex-col rounded-xl border bg-card p-6 transition-shadow hover:shadow-md sm:p-8">
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <Badge variant="secondary" className="font-medium">
-          {item.source_name}
+          {vendorLabel(item.source_name)}
         </Badge>
         <span className="tabular-nums">{formatDateTime(item.published_at)}</span>
       </div>
@@ -81,7 +82,7 @@ function ListItem({ item, index }: { item: NewsListItem; index: number }) {
         <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
           <span className="tabular-nums">{formatDateTime(item.published_at)}</span>
           <span aria-hidden>·</span>
-          <span>来源: {item.source_name}</span>
+          <span>来源: {vendorLabel(item.source_name)}</span>
         </div>
       </div>
     </Link>

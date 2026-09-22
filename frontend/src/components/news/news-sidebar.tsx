@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { Link } from "@tanstack/react-router"
 import { Search } from "lucide-react"
+import { vendorLabel } from "@/lib/vendors"
 import { useNewsList } from "@/api/news"
 import { Input } from "@/components/ui/input"
 import {
@@ -44,7 +45,7 @@ export function NewsSidebar({ activeId, className, onNavigate }: NewsSidebarProp
         new Map(
           (sourcesQuery.data?.items ?? []).map((item) => [
             item.source_id,
-            item.source_name,
+            vendorLabel(item.source_name),
           ]),
         ).entries(),
       ),
