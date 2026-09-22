@@ -4,7 +4,7 @@ import { Hero } from "@/components/home/hero"
 import { NewsGrid } from "@/components/home/news-grid"
 import { ModelWatch } from "@/components/home/model-watch"
 import { TrendMap } from "@/components/home/trend-map"
-import { Insight } from "@/components/home/insight"
+import { ForumSpotlight } from "@/components/home/forum-spotlight"
 
 export const Route = createFileRoute("/_app/")({
   component: HomePage,
@@ -28,7 +28,7 @@ function HomePage() {
       <NewsGrid featured={featured} rest={rest} loading={newsQuery.isPending} />
       <ModelWatch />
       <TrendMap />
-      <Insight />
+      <ForumSpotlight />
     </>
   )
 }

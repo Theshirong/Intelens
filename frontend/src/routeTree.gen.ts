@@ -13,8 +13,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppWorkspaceRouteImport } from './routes/_app/workspace'
+import { Route as AppForumRouteImport } from './routes/_app/forum'
 import { Route as AppNewsIndexRouteImport } from './routes/_app/news/index'
+import { Route as AppForumIndexRouteImport } from './routes/_app/forum/index'
 import { Route as AppNewsIdRouteImport } from './routes/_app/news/$id'
+import { Route as AppForumPostIdRouteImport } from './routes/_app/forum/$postId'
+import { Route as AppModelsCompanyIndexRouteImport } from './routes/_app/models/$company/index'
+import { Route as AppModelsCompanyModelIdRouteImport } from './routes/_app/models/$company/$modelId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -35,53 +40,116 @@ const AppWorkspaceRoute = AppWorkspaceRouteImport.update({
   path: '/workspace',
   getParentRoute: () => AppRoute,
 } as any)
+const AppForumRoute = AppForumRouteImport.update({
+  id: '/forum',
+  path: '/forum',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNewsIndexRoute = AppNewsIndexRouteImport.update({
   id: '/news/',
   path: '/news/',
   getParentRoute: () => AppRoute,
+} as any)
+const AppForumIndexRoute = AppForumIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppForumRoute,
 } as any)
 const AppNewsIdRoute = AppNewsIdRouteImport.update({
   id: '/news/$id',
   path: '/news/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppForumPostIdRoute = AppForumPostIdRouteImport.update({
+  id: '/$postId',
+  path: '/$postId',
+  getParentRoute: () => AppForumRoute,
+} as any)
+const AppModelsCompanyIndexRoute = AppModelsCompanyIndexRouteImport.update({
+  id: '/models/$company/',
+  path: '/models/$company/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppModelsCompanyModelIdRoute = AppModelsCompanyModelIdRouteImport.update({
+  id: '/models/$company/$modelId',
+  path: '/models/$company/$modelId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
+  '/forum': typeof AppForumRouteWithChildren
   '/workspace': typeof AppWorkspaceRoute
   '/': typeof AppIndexRoute
+  '/forum/$postId': typeof AppForumPostIdRoute
   '/news/$id': typeof AppNewsIdRoute
+  '/forum/': typeof AppForumIndexRoute
   '/news': typeof AppNewsIndexRoute
+  '/models/$company/$modelId': typeof AppModelsCompanyModelIdRoute
+  '/models/$company': typeof AppModelsCompanyIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/workspace': typeof AppWorkspaceRoute
   '/': typeof AppIndexRoute
+  '/forum/$postId': typeof AppForumPostIdRoute
   '/news/$id': typeof AppNewsIdRoute
+  '/forum': typeof AppForumIndexRoute
   '/news': typeof AppNewsIndexRoute
+  '/models/$company/$modelId': typeof AppModelsCompanyModelIdRoute
+  '/models/$company': typeof AppModelsCompanyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/forum': typeof AppForumRouteWithChildren
   '/_app/workspace': typeof AppWorkspaceRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/forum/$postId': typeof AppForumPostIdRoute
   '/_app/news/$id': typeof AppNewsIdRoute
+  '/_app/forum/': typeof AppForumIndexRoute
   '/_app/news/': typeof AppNewsIndexRoute
+  '/_app/models/$company/$modelId': typeof AppModelsCompanyModelIdRoute
+  '/_app/models/$company/': typeof AppModelsCompanyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/workspace' | '/' | '/news/$id' | '/news'
+  fullPaths:
+    | '/login'
+    | '/forum'
+    | '/workspace'
+    | '/'
+    | '/forum/$postId'
+    | '/news/$id'
+    | '/forum/'
+    | '/news'
+    | '/models/$company/$modelId'
+    | '/models/$company'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/workspace' | '/' | '/news/$id' | '/news'
+  to:
+    | '/login'
+    | '/workspace'
+    | '/'
+    | '/forum/$postId'
+    | '/news/$id'
+    | '/forum'
+    | '/news'
+    | '/models/$company/$modelId'
+    | '/models/$company'
   id:
     | '__root__'
     | '/_app'
     | '/login'
+    | '/_app/forum'
     | '/_app/workspace'
     | '/_app/'
+    | '/_app/forum/$postId'
     | '/_app/news/$id'
+    | '/_app/forum/'
     | '/_app/news/'
+    | '/_app/models/$company/$modelId'
+    | '/_app/models/$company/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,12 +187,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorkspaceRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/forum': {
+      id: '/_app/forum'
+      path: '/forum'
+      fullPath: '/forum'
+      preLoaderRoute: typeof AppForumRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/news/': {
       id: '/_app/news/'
       path: '/news'
       fullPath: '/news'
       preLoaderRoute: typeof AppNewsIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/forum/': {
+      id: '/_app/forum/'
+      path: '/'
+      fullPath: '/forum/'
+      preLoaderRoute: typeof AppForumIndexRouteImport
+      parentRoute: typeof AppForumRoute
     }
     '/_app/news/$id': {
       id: '/_app/news/$id'
@@ -133,21 +215,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNewsIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/forum/$postId': {
+      id: '/_app/forum/$postId'
+      path: '/$postId'
+      fullPath: '/forum/$postId'
+      preLoaderRoute: typeof AppForumPostIdRouteImport
+      parentRoute: typeof AppForumRoute
+    }
+    '/_app/models/$company/': {
+      id: '/_app/models/$company/'
+      path: '/models/$company'
+      fullPath: '/models/$company'
+      preLoaderRoute: typeof AppModelsCompanyIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/models/$company/$modelId': {
+      id: '/_app/models/$company/$modelId'
+      path: '/models/$company/$modelId'
+      fullPath: '/models/$company/$modelId'
+      preLoaderRoute: typeof AppModelsCompanyModelIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppForumRouteChildren {
+  AppForumPostIdRoute: typeof AppForumPostIdRoute
+  AppForumIndexRoute: typeof AppForumIndexRoute
+}
+
+const AppForumRouteChildren: AppForumRouteChildren = {
+  AppForumPostIdRoute: AppForumPostIdRoute,
+  AppForumIndexRoute: AppForumIndexRoute,
+}
+
+const AppForumRouteWithChildren = AppForumRoute._addFileChildren(
+  AppForumRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppForumRoute: typeof AppForumRouteWithChildren
   AppWorkspaceRoute: typeof AppWorkspaceRoute
   AppIndexRoute: typeof AppIndexRoute
   AppNewsIdRoute: typeof AppNewsIdRoute
   AppNewsIndexRoute: typeof AppNewsIndexRoute
+  AppModelsCompanyModelIdRoute: typeof AppModelsCompanyModelIdRoute
+  AppModelsCompanyIndexRoute: typeof AppModelsCompanyIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppForumRoute: AppForumRouteWithChildren,
   AppWorkspaceRoute: AppWorkspaceRoute,
   AppIndexRoute: AppIndexRoute,
   AppNewsIdRoute: AppNewsIdRoute,
   AppNewsIndexRoute: AppNewsIndexRoute,
+  AppModelsCompanyModelIdRoute: AppModelsCompanyModelIdRoute,
+  AppModelsCompanyIndexRoute: AppModelsCompanyIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
