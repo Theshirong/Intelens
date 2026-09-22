@@ -1,98 +1,51 @@
-import { Badge } from "@/components/ui/badge"
-import { SectionHeader, SectionMoreLink } from "@/components/home/hero"
+import { Link } from "@tanstack/react-router"
+import { useModelList } from "@/api/models"
+import { ModelPriceScatter } from "@/components/models/model-price-scatter"
+import { SectionHeader } from "@/components/home/hero"
+import { vendorLabel } from "@/lib/models"
 
-interface ModelCard {
-  name: string
-  vendor: string
-  context: string
-  tags: string[]
-  releaseDate: string
-  trend: string
-}
-
-const MODELS: ModelCard[] = [
-  {
-    name: "GPT-5.2",
-    vendor: "OpenAI",
-    context: "128K",
-    tags: ["多模态", "推理"],
-    releaseDate: "2025-09",
-    trend: "+12%",
-  },
-  {
-    name: "Claude 3.7",
-    vendor: "Anthropic",
-    context: "200K",
-    tags: ["推理", "代码"],
-    releaseDate: "2025-08",
-    trend: "+8%",
-  },
-  {
-    name: "Gemini 2.5 Pro",
-    vendor: "Google",
-    context: "1M",
-    tags: ["多模态", "推理"],
-    releaseDate: "2025-05",
-    trend: "+15%",
-  },
-  {
-    name: "DeepSeek V4",
-    vendor: "DeepSeek",
-    context: "128K",
-    tags: ["通用", "代码"],
-    releaseDate: "2025-08",
-    trend: "+20%",
-  },
-]
-
-/** 模型追踪: 主流模型卡片 (演示数据) */
+/**
+ * 模型追踪: Artificial Analysis 智能指数 × 输出价的分布散点图,
+ * 点厂商图例可筛选, 点数据点看三个指数, 卡片底部进该模型的详情页 (含价格历史)。
+ */
 export function ModelWatch() {
+  const { data, isPending, isError } = useModelList()
+  const models = data ?? []
+  const vendors = [...new Set(models.map((model) => model.company))]
+
   return (
     <section id="model-watch" className="scroll-mt-20 border-t bg-card/60">
       <div className="container py-14">
-        <SectionHeader
-          eyebrow="Model Watch"
-          title="模型追踪"
-          action={<SectionMoreLink to="/news" label="查看全部" />}
-        />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {MODELS.map((model) => (
-            <article
-              key={model.name}
-              className="group rounded-xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="font-display text-lg font-bold tracking-tight transition-colors group-hover:text-primary">
-                    {model.name}
-                  </h3>
-                  <div className="text-xs text-muted-foreground">{model.vendor}</div>
-                </div>
-                <Badge variant="outline" className="border-emerald-600/30 text-emerald-700 tabular-nums">
-                  ↑ {model.trend}
-                </Badge>
-              </div>
+        <SectionHeader eyebrow="Model Watch" title="模型追踪" />
 
-              <div className="mt-5">
-                <div className="text-xs text-muted-foreground">上下文窗口</div>
-                <div className="font-display text-2xl font-black tabular-nums">{model.context}</div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {model.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs font-medium">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-
-              <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
-                <span>发布时间</span>
-                <span className="font-medium tabular-nums">{model.releaseDate}</span>
-              </div>
-            </article>
-          ))}
-        </div>
+        {isPending ? (
+          <div className="h-[420px] animate-pulse rounded-xl border bg-card/50" />
+        ) : isError ? (
+          <div className="flex min-h-32 items-center justify-center rounded-xl border border-dashed bg-card/50 text-sm text-muted-foreground">
+            模型数据加载失败
+          </div>
+        ) : models.length > 0 ? (
+          <>
+            <ModelPriceScatter models={models} />
+            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+              <span>点击查看模型详情：</span>
+              {vendors.map((vendor) => (
+                <Link
+                  key={vendor}
+                  to="/models/$company"
+                  params={{ company: vendor }}
+                  className="underline-offset-4 transition-colors hover:text-primary hover:underline"
+                >
+                  {vendorLabel(vendor)}
+                </Link>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="flex min-h-32 items-center justify-center rounded-xl border border-dashed bg-card/50 text-sm text-muted-foreground">
+            暂无模型数据
+          </div>
+        )}
       </div>
     </section>
   )
