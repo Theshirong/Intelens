@@ -14,14 +14,18 @@ async def get_or_create_source(
     name: str,
     url: str,
     type: Literal["rss", "web"] = "web",
+    is_active: bool = True,
 ) -> SourceModel:
     """
     按名称查找新闻源, 不存在则创建;
-    采集任务启动时兜底调用, 保证源记录存在
+    采集任务启动时兜底调用, 保证源记录存在。
+
+    is_active=False 用于「只作为外键锚点、不参与新闻抓取」的源 (如模型信息的
+    采集源 openrouter); 已存在的源不修改其 is_active。
     """
     source = await db.scalar(select(SourceModel).where(SourceModel.name == name))
     if source is None:
-        source = SourceModel(name=name, url=url, type=type)
+        source = SourceModel(name=name, url=url, type=type, is_active=is_active)
         db.add(source)
         await db.flush()
     return source
@@ -49,11 +53,18 @@ async def save_news(
     normalized = {item.url.rstrip("/") or "/": item for item in items}
 
     result = await db.execute(
-        select(NewsModel.url).where(NewsModel.url.in_(normalized.keys()))
+        select(NewsModel).where(NewsModel.url.in_(normalized.keys()))
     )
-    existing_urls = set(result.scalars().all())
+    existing = {row.url: row for row in result.scalars().all()}
 
-    new_urls = [url for url in normalized if url not in existing_urls]
+    # 正文从「没有」变成「有」属于补全而不是修改, 所以要先回填再算新增。
+    # 有些源一开始只能抓到标题 (正文客户端渲染), 后补的抓取能力应当能填上。
+    for url, row in existing.items():
+        item = normalized[url]
+        if item.content and not row.content:
+            row.content = item.content
+
+    new_urls = [url for url in normalized if url not in existing]
     if new_urls:
         db.add_all(
             NewsModel(
@@ -74,15 +85,19 @@ async def get_news_list(
     page: int,
     page_size: int,
     source_id: int | None = None,
+    q: str | None = None,
 ) -> tuple[list[NewsModel], int]:
     """
     分页查询新闻, 按发布时间倒序;
     source_id 不为 None 时按源过滤;
+    q 不为 None 时按标题模糊匹配;
     return: (新闻列表, 总数)
     """
     query = select(NewsModel)
     if source_id is not None:
         query = query.where(NewsModel.source_id == source_id)
+    if q:
+        query = query.where(NewsModel.title.ilike(f"%{q.strip()}%"))
 
     # count 复用同一组 where 条件
     total = (

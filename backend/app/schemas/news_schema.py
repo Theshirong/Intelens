@@ -9,6 +9,7 @@ class NewsQueryParams(PageParams):
     """新闻列表查询参数"""
 
     source_id: int | None = Field(default=None, description="按新闻源过滤")
+    q: str | None = Field(default=None, max_length=50, description="标题关键词")
 
 
 class NewsListItem(BaseModel):

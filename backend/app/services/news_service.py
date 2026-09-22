@@ -6,10 +6,14 @@ from app.models.news_model import NewsModel
 
 
 async def read_news_list(
-    db: AsyncSession, page: int, page_size: int, source_id: int | None = None
+    db: AsyncSession,
+    page: int,
+    page_size: int,
+    source_id: int | None = None,
+    q: str | None = None,
 ) -> tuple[list[NewsModel], int]:
     """分页查询新闻列表"""
-    return await get_news_list(db, page, page_size, source_id)
+    return await get_news_list(db, page, page_size, source_id, q)
 
 
 async def read_news(db: AsyncSession, news_id: int) -> NewsModel:

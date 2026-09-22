@@ -7,12 +7,11 @@ from app.services import news_service
 from app.schemas.common import Page
 from app.schemas.news_schema import NewsDetail, NewsListItem, NewsQueryParams
 from app.core.database import get_db
-from app.api.deps import get_current_user
 
+# 新闻是公开内容, 不要求登录
 router = APIRouter(
     prefix="/news",
     tags=["news"],
-    dependencies=[Depends(get_current_user)],
 )
 
 
@@ -26,6 +25,7 @@ async def get_news(
         page=params.page,
         page_size=params.page_size,
         source_id=params.source_id,
+        q=params.q,
     )
     return Page.create(items=news_list, total=total, params=params)
 
