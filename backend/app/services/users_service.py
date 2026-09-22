@@ -5,6 +5,7 @@ from app.crud.users_crud import (
     get_by_username,
     delete_user,
     update_password,
+    update_username,
 )
 from app.crud.refresh_token_crud import (
     delete_all_for_user,
@@ -17,6 +18,7 @@ from app.schemas.users_schema import (
     Token,
     RefreshRequest,
     UserPasswordRequest,
+    UserUpdateRequest,
 )
 
 from app.core.security import verify_password, decode_refresh_token
@@ -160,3 +162,29 @@ async def update_user_password(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="旧密码错误")
 
     await delete_all_for_user(db, user_id)
+
+
+async def update_profile(
+    db: AsyncSession, user_id: int, data: UserUpdateRequest
+) -> User:
+    """
+    修改个人信息;
+    目前只支持改用户名: 改的是登录名, 论坛帖子/评论里的作者名会跟着变
+    """
+    user = await get_user(db, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
+
+    username = data.username.strip() if data.username else None
+    if username is None or username == user.username:
+        # 没变化就当作成功, 不算错误
+        return user
+
+    # 先查重给个明确的 409, 再用唯一索引兜住并发
+    if await get_by_username(db, username):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="用户名已存在")
+    try:
+        return await update_username(db, user_id, username)
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="用户名已存在")

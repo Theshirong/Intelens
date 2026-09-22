@@ -44,6 +44,21 @@ class UserDeleteRequest(BaseModel):
     password: Annotated[str, Field(min_length=6, max_length=20, description="用户密码")]
 
 
+class UserUpdateRequest(BaseModel):
+    """修改个人信息 (目前只有用户名可改)"""
+
+    username: Annotated[
+        str | None,
+        Field(default=None, min_length=3, max_length=20, description="用户名称"),
+    ] = None
+
+    @model_validator(mode="after")
+    def check_has_field(self):
+        if self.username is None:
+            raise ValueError("没有需要修改的字段")
+        return self
+
+
 class UserResponse(BaseModel):
     """用户信息响应信息"""
 

@@ -94,6 +94,17 @@ async def update_password(
     await db.flush()
 
 
+async def update_username(db: AsyncSession, user_id: int, username: str) -> User:
+    """改用户名; 并发重名交给唯一索引兜底"""
+    obj: User | None = await db.get(User, user_id)
+    if not obj:
+        raise LookupError("用户不存在")
+    obj.username = username
+    await db.flush()
+    await db.refresh(obj)
+    return obj
+
+
 async def delete_user(db: AsyncSession, user_id: int) -> bool:
     """注销用户"""
     # 先查询是否有用户存在

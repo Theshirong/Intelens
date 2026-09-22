@@ -12,6 +12,7 @@ from app.schemas.users_schema import (
     UserDeleteRequest,
     UserPasswordRequest,
     RefreshRequest,
+    UserUpdateRequest,
 )
 from app.core.database import get_db
 from app.api.deps import get_current_user
@@ -76,3 +77,12 @@ async def update_password(
 ):
     await users_service.update_user_password(db, current_user.id, data)
     return {"msg": f"用户 {current_user.username} 密码修改成功, 请重新登录"}
+
+
+@router.patch("/me", summary="用户修改自己的信息", response_model=UserResponse)
+async def update_me(
+    data: UserUpdateRequest,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_db),
+):
+    return await users_service.update_profile(db, current_user.id, data)
