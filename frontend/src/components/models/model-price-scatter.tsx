@@ -217,11 +217,13 @@ function PinnedCard({
  * 在副标题里说明。
  *
  * 交互: 悬停看简要预览; 点击钉住详情卡; 卡片底部「查看详情」进详情页。
+ * 图例支持多选: 一家都没选 = 全部显示, 选中的若干家高亮, 其余变淡。
  */
 export function ModelPriceScatter({ models }: { models: ModelListItem[] }) {
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
-  const [selected, setSelected] = useState<string | null>(null)
+  // 图例多选: 空集合 = 不过滤(全部厂商都在图上), 否则只高亮选中的这几家
+  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [pinned, setPinned] = useState<{
     point: ScatterPoint
     x: number
@@ -284,7 +286,16 @@ export function ModelPriceScatter({ models }: { models: ModelListItem[] }) {
 
   const toggle = (vendor: string) => {
     setPinned(null)
-    setSelected((current) => (current === vendor ? null : vendor))
+    setSelected((current) => {
+      const next = new Set(current)
+      if (!next.delete(vendor)) next.add(vendor)
+      return next
+    })
+  }
+
+  const clearSelection = () => {
+    setPinned(null)
+    setSelected(new Set())
   }
 
   // 一个有指数的都没有时, 空白坐标系只会让人以为是画的姿势不对
@@ -336,7 +347,7 @@ export function ModelPriceScatter({ models }: { models: ModelListItem[] }) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {vendors.map((vendor) => {
-            const on = selected === null || selected === vendor
+            const on = selected.size === 0 || selected.has(vendor)
             return (
               <button
                 key={vendor}
@@ -366,13 +377,13 @@ export function ModelPriceScatter({ models }: { models: ModelListItem[] }) {
           <span className="text-xs text-muted-foreground/70">
             形状：圆形=中国、方形=美国
           </span>
-          {selected !== null && (
+          {selected.size > 0 && (
             <button
               type="button"
-              onClick={() => toggle(selected)}
+              onClick={clearSelection}
               className="text-xs text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
             >
-              显示全部
+              显示全部（已选 {selected.size} 家）
             </button>
           )}
         </div>
@@ -462,7 +473,7 @@ export function ModelPriceScatter({ models }: { models: ModelListItem[] }) {
                 shape={shapeOf(vendor)}
                 fill={colorOf(vendor)}
                 fillOpacity={
-                  selected === null || selected === vendor ? 0.85 : 0.12
+                  selected.size === 0 || selected.has(vendor) ? 0.85 : 0.12
                 }
                 onClick={(...args: unknown[]) => {
                   // recharts 的入参顺序在版本间有差异, 按特征各取各的

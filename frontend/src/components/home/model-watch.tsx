@@ -6,7 +6,7 @@ import { vendorLabel } from "@/lib/models"
 
 /**
  * 模型追踪: Artificial Analysis 智能指数 × 输出价的分布散点图,
- * 点厂商图例可筛选, 点数据点看三个指数, 卡片底部进该模型的详情页 (含价格历史)。
+ * 点厂商图例可多选筛选, 点数据点看三个指数, 卡片底部进该模型的详情页 (含价格历史)。
  */
 export function ModelWatch() {
   const { data, isPending, isError } = useModelList()
